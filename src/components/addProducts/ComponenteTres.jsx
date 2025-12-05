@@ -1,0 +1,170 @@
+import React from 'react';
+// =================================================================================================
+// IMPORTACIONES DE COMPONENTES UI5
+// =================================================================================================
+import {
+  Card,
+  CardHeader,
+  FlexBox,
+  Label,
+  Title,
+  Text,
+  Button,
+  MessageStrip,
+  Tag,
+  // REMOVED: List,
+  // REMOVED: StandardListItem
+} from "@ui5/webcomponents-react";
+// =================================================================================================
+// IMPORTACIONES DE ESTILOS Y ASSETS
+// =================================================================================================
+import '@ui5/webcomponents/dist/Assets.js';
+import '@ui5/webcomponents-fiori/dist/Assets.js';
+import '@ui5/webcomponents-icons/dist/AllIcons.js';
+
+// =================================================================================================
+// DEFINICIÓN DEL COMPONENTE
+// =================================================================================================
+const ComponenteTres = ({ productData, presentations, allCategories = [] }) => {
+  
+  // ===============================================================================================
+  // FUNCIONES AUXILIARES
+  // ===============================================================================================
+
+  /**
+   * Busca el nombre de una categoría a partir de su ID.
+   * @param {string} catId - El ID de la categoría (ej. "CAT_LAPTOPS").
+   * @returns {string} - El nombre de la categoría (ej. "Laptops") o el ID si no se encuentra.
+   */
+  const getCategoryNameById = (catId) => {
+    const category = allCategories.find(cat => cat.CATID === catId);
+    return category ? category.Nombre : catId;
+  };
+
+  // ===============================================================================================
+  // RENDERIZADO DEL COMPONENTE (JSX)
+  // ===============================================================================================
+
+  return (
+    <Card style={{ width: '100%', marginTop: '20px' }}
+      header={
+        <CardHeader
+          titleText="Paso 3: Revisión y Confirmación"
+          subtitleText="Verifique toda la información antes de enviar"
+        />
+      }
+    >
+      <div style={{ padding: '2rem' }}>
+        {/* ======================================================================= */}
+        {/* SECCIÓN DE RESUMEN DEL PRODUCTO PADRE                                   */}
+        {/* ======================================================================= */}
+        <Title level="H4" style={{ marginBottom: '1rem', color: '#0854a0' }}>
+          Información del Producto Padre
+        </Title>
+        <div style={{
+          backgroundColor: '#f7f7f7',
+          padding: '1.5rem',
+          borderRadius: '8px',
+          marginBottom: '2rem'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '1rem', alignItems: 'baseline' }}>
+            <Text style={{ fontWeight: 'bold' }}>Nombre Producto:</Text>
+            <Text>{productData.PRODUCTNAME || '-'}</Text>
+
+            <Text style={{ fontWeight: 'bold' }}>SKU ID:</Text>
+            <Text>{productData.SKUID || '-'}</Text>
+            
+            <Text style={{ fontWeight: 'bold' }}>Descripción:</Text>
+            <Text>{productData.DESSKU || '-'}</Text>
+            
+            <Text style={{ fontWeight: 'bold' }}>Marca:</Text>
+            <Text>{productData.MARCA || '-'}</Text>
+            
+            <Text style={{ fontWeight: 'bold' }}>Unidad de Medida:</Text>
+            <Text>{productData.IDUNIDADMEDIDA || '-'}</Text>
+            
+            <Text style={{ fontWeight: 'bold' }}>Código de Barras:</Text>
+            <Text>{productData.BARCODE || '-'}</Text>
+
+            <Text style={{ fontWeight: 'bold' }}>Info Adicional:</Text>
+            <Text>{productData.INFOAD || '-'}</Text>
+
+            <Text style={{ fontWeight: 'bold' }}>Categorías:</Text>
+            <FlexBox wrap="Wrap" style={{ gap: '0.5rem' }}>
+              {productData.CATEGORIAS?.map((catId, i) => (
+                <Tag key={i} colorScheme="8">{getCategoryNameById(catId)}</Tag>
+              ))}
+            </FlexBox>
+          </div>
+        </div>
+
+        {/* ======================================================================= */}
+        {/* SECCIÓN DE LISTA DE PRESENTACIONES                                      */}
+        {/* ======================================================================= */}
+        <Title level="H4" style={{ marginBottom: '1rem', color: '#0854a0' }}>
+          Presentaciones ({presentations.length})
+        </Title>
+        
+        {presentations.length > 0 ? (
+          presentations.map((pres, index) => (
+            <Card
+              key={index}
+              style={{ marginBottom: '1rem', backgroundColor: '#fafafa' }}
+            >
+              <div style={{ padding: '1rem' }}>
+                <FlexBox justifyContent="SpaceBetween" alignItems="Start">
+                  <div style={{ flex: 1 }}>
+                    <Title level="H6" style={{ marginBottom: '0.25rem' }}>
+                      {pres.NOMBREPRESENTACION}
+                    </Title>
+                    <Text style={{ fontSize: '14px', color: '#666', marginBottom: '0.5rem' }}>
+                      ID: {pres.IdPresentaOK}
+                    </Text>
+                    <Text style={{ marginBottom: '0.5rem' }}>{pres.Descripcion}</Text>
+                    <FlexBox style={{ gap: '1rem', marginTop: '0.5rem' }}>
+                      <Text><strong>Archivos:</strong> {pres.files?.length || 0}</Text>
+                    </FlexBox>
+                    {(() => {
+                      let propiedades = pres.PropiedadesExtras;
+                      // Si PropiedadesExtras es un string, intentamos parsearlo como JSON.
+                      if (typeof propiedades === 'string' && propiedades.trim()) {
+                        try {
+                          propiedades = JSON.parse(propiedades);
+                        } catch (e) {
+                          console.error("Error al parsear PropiedadesExtras:", e);
+                          propiedades = {}; // Si falla, lo dejamos como objeto vacío.
+                        }
+                      }
+                      return propiedades && Object.keys(propiedades).length > 0 && (
+                      <div style={{ marginTop: '0.5rem' }}>
+                        <Label>Propiedades:</Label>
+                        <FlexBox wrap="Wrap" style={{ gap: '0.5rem', marginTop: '0.25rem' }}>
+                          {Object.entries(propiedades).map(([key, value]) => (
+                            <Tag key={key} colorScheme="7">
+                              <span style={{ fontWeight: 'bold' }}>{key}:</span>
+                              &nbsp;
+                              <span>{String(value)}</span>
+                            </Tag>
+                          ))}
+                        </FlexBox>
+                      </div>
+                      );
+                    })()}
+                  </div>
+                  <Tag colorScheme="3">#{index + 1}</Tag>
+                </FlexBox>
+              </div>
+            </Card>
+          ))
+        ) : (
+          <MessageStrip design="Warning" hideCloseButton>
+            No se han agregado presentaciones. Se recomienda agregar al menos una.
+          </MessageStrip>
+        )}
+
+      </div>
+    </Card>
+  );
+};
+
+export default ComponenteTres;
